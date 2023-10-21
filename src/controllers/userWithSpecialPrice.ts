@@ -27,7 +27,6 @@ const userWithSpecialPrice = async (req: Request, res: Response) => {
 
     // Buscamos el usuario mediante el ID
     const user = (await Users.findById(user_id)) as UserDocument;
-    console.log(user);
 
     // Error si el usuario no se encuentra en la base de datos
     if (!user) {

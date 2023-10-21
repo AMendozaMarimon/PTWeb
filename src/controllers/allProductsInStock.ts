@@ -4,7 +4,7 @@ const getAllProducts = (req: Request, res: any) => {
   Products
     .find({ existencia: { $ne: 0 } }) // Verifica que la existencia sea diferente a 0
     .then((products) => {
-      res.json(products);
+      res.json(products); // Enviamos el JSON con los productos que tienen Stock
     })
     .catch((err) => {
       res
