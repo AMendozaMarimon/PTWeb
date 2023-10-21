@@ -1,9 +1,10 @@
 import { Request, Response } from "express";
-import Products from "../models/Products";
 import Users from "../models/Users";
+import Products from "../models/Products";
 
 interface UserDocument {
   _id: string;
+  id: number;
   nombre: string;
   metadata: {
     precios_especiales: {
@@ -24,8 +25,9 @@ const userWithSpecialPrice = async (req: Request, res: Response) => {
   try {
     const { user_id, nombre_producto } = req.params; // Obtengo los parámetros de la URL
 
-    // Buscamos el usuario mediante el id
+    // Buscamos el usuario mediante el ID
     const user = (await Users.findById(user_id)) as UserDocument;
+    console.log(user);
 
     // Error si el usuario no se encuentra en la base de datos
     if (!user) {
@@ -35,28 +37,31 @@ const userWithSpecialPrice = async (req: Request, res: Response) => {
     }
 
     // Buscar el precio especial para el producto en el campo "metadata"
-    const priceSpecial = await user.metadata?.precios_especiales;
+    const specialPrice = await user.metadata?.precios_especiales;
 
     // Buscar el precio especial para el producto en específico
-    if (priceSpecial && priceSpecial.length > 0) {
-      const findPriceSpecial = priceSpecial.find(
+    if (specialPrice && specialPrice.length > 0) {
+      const findPriceSpecial = specialPrice.find(
         (product) => product.nombre_producto === nombre_producto
       );
 
-      // Si se encuentra un producto especial lo retornamos
+      // Si se encuentra un producto especial, lo retornamos
       if (findPriceSpecial) {
-        const specialPriceMessage = "Este es el precio: " + findPriceSpecial.precio_especial_personal;
-        return res.status(200).json({ message: specialPriceMessage });
+        return res
+          .status(200)
+          .json({ precio_especial: findPriceSpecial.precio_especial_personal });
       }
     }
 
-    // Si no se encuentra precio especial se busca el producto en la base de datos
-    const productPriceBase = await Products.findOne({
+    // Si no se encuentra precio especial, se busca el producto en la base de datos
+    const product = (await Products.findOne({
       nombre: nombre_producto,
-    }) as ProductDocument;
+    })) as ProductDocument;
 
-    if (productPriceBase) {
-      return res.status(200).json(productPriceBase.precio_base);
+    const basePriceProduct = await product.precio_base;
+
+    if (basePriceProduct) {
+      return res.status(200).json({ precio_base: basePriceProduct });
     } else {
       return res
         .status(404)
